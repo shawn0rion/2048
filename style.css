@@ -1,0 +1,40 @@
+:root {
+  --square-size: 64px;
+  --brown: #d2c3b2;
+  --darkest-brown: #2d1d0f;
+  --dark-brown: #42392d;
+  --ligher-brown: #a59786;
+  --light-brown: #f2e6d9;
+}
+
+body {
+  background-color: var(--dark-brown);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  font-family: "Ubuntu", sans-serif;
+}
+
+#grid {
+  display: grid;
+  border: 16px solid var(--light-brown);
+  grid-template-columns: repeat(4, var(--square-size));
+  grid-gap: 8px;
+  background-color: var(--brown);
+  padding: 16px;
+  border-right-color: var(--ligher-brown);
+}
+
+#grid .cell {
+  width: var(--square-size);
+  height: var(--square-size);
+  background-color: var(--dark-brown);
+  color: var(--light-brown);
+  font-size: 2rem;
+  text-align: center;
+  line-height: var(--square-size);
+  box-shadow: 0 0 0 3px var(--darkest-brown) inset;
+  border-radius: 4px;
+}
