@@ -1,4 +1,4 @@
-// declare variables
+// declare variables and objects
 const gridElement = document.querySelector("#grid");
 let isAnimating = false;
 const SQUARE_SIZE = 64;
@@ -10,6 +10,7 @@ const grid = {
 };
 
 const cell = {
+  id: null,
   x: 0,
   y: 0,
   value: null,
@@ -24,6 +25,7 @@ const directions = {
   down: { dx: 0, dy: 1 },
 };
 
+// game objects
 const createGridCells = () => {
   for (let y = 0; y < grid.numRows; y++) {
     // create row
@@ -36,6 +38,7 @@ const createGridCells = () => {
   }
 };
 
+// ui objects
 const renderGrid = () => {
   // append children to gridElement
   gridElement.innerHTML = "";
@@ -55,11 +58,14 @@ const renderGrid = () => {
   // access grid.cells[y][x].element and set to cellElement
 };
 
-// handle MOVEMENT
+// handle DIRECTIONAL MOVEMENT
+// bc the direction affects the order of the loop
 
 // 'Left' move
+// TODO: fix bug where doesn't slide throuhg multiple empty spaces
 function moveLeft() {
-  for (let x = 0; x < grid.numRows; x++) {
+  for (let x = grid.numCols - 1; x >= 0; x--) {
+    gridLogger();
     for (let y = 0; y < grid.numCols; y++) {
       processCellMovement(x, y, "left");
     }
@@ -69,7 +75,7 @@ function moveLeft() {
 // 'Right' move
 function moveRight() {
   for (let x = 0; x < grid.numRows; x++) {
-    for (let y = grid.numCols - 1; y >= 0; y--) {
+    for (let y = 0; y < grid.numRows; y++) {
       // processing for 'right' mov
       processCellMovement(x, y, "right");
     }
@@ -79,7 +85,6 @@ function moveRight() {
 // 'Up' move
 function moveUp() {
   for (let y = grid.numRows - 1; y >= 0; y--) {
-    gridLogger();
     for (let x = 0; x < grid.numCols; x++) {
       // processing for 'up' move
       processCellMovement(x, y, "up");
@@ -97,6 +102,7 @@ function moveDown() {
 }
 
 const checkNextCell = (x, y, key) => {
+  // has values to get next cell
   const direction = directions[key];
 
   // handle out of bounds
@@ -111,53 +117,83 @@ const checkNextCell = (x, y, key) => {
 };
 
 function processCellMovement(x, y, key) {
+  // copy this cell
   let currentCell = { ...grid.cells[y][x] };
+
   if (currentCell.value === null) return;
 
   const nextCell = checkNextCell(x, y, key);
 
   if (nextCell === undefined) return;
+
+  // if this tile and next tile are same value, then merge
   if (nextCell.value === currentCell.value) {
     const nextValue = parseInt(currentCell.value) * 2;
 
     grid.cells[y][x].value = null;
     grid.cells[nextCell.y][nextCell.x].value = nextValue;
   }
+  // if the next tile is empty, then move
   if (nextCell.value === null) {
     grid.cells[y][x].value = null;
     grid.cells[nextCell.y][nextCell.x].value = parseInt(currentCell.value);
   }
 }
 
+// handle debugging
 const gridLogger = () => {
   console.table(grid.cells.map((row) => row.map((cell) => cell.value)));
 };
 
+const generateCell = () => {
+  // select cell until it doesn't have a value
+  let randX = Math.floor(Math.random() * grid.numCols);
+  let randY = Math.floor(Math.random() * grid.numRows);
+  while (grid.cells[randY][randX].value !== null) {
+    randX = Math.floor(Math.random() * grid.numCols);
+    randY = Math.floor(Math.random() * grid.numRows);
+  }
+  // generate new cell
+  grid.cells[randY][randX].value = 2;
+};
+
 // handle dom events
-const handleKeyDown = (e) => {
+const handleKeyUp = (e) => {
   if (e.key === "a" || e.key === "ArrowUp") moveUp();
   if (e.key === "s" || e.key === "ArrowDown") moveDown();
   if (e.key === "d" || e.key === "ArrowRight") moveRight();
   if (e.key === "w" || e.key === "ArrowLeft") moveLeft();
 
+  // generate a new cell
+  generateCell();
+
+  // update ui
   renderGrid();
 };
 
 // add event listeners
-document.addEventListener("keydown", handleKeyDown);
+document.addEventListener("keyup", handleKeyUp);
 
 const init = () => {
   createGridCells();
   // initalize some cells:
-  for (let x = 0; x < grid.numCols; x++) {
-    for (let y = 0; y < grid.numRows; y++) {
-      if (x < 4 && y < 4) {
-        grid.cells[y][x].value = 2;
-      }
-    }
-  }
+  //   for (let x = 0; x < grid.numCols; x++) {
+  //     for (let y = 0; y < grid.numRows; y++) {
+  //       if (x < 4 && y < 4) {
+  //         grid.cells[y][x].value = 2;
+  //       }
+  //     }
+  //   }
   gridLogger();
+
   renderGrid();
 };
 
+function gameLoop() {
+  generateCell();
+  generateCell();
+  renderGrid();
+}
+
 init();
+gameLoop();
